@@ -75,3 +75,4 @@ app.get('/matches/:id/json', function(){ match.singleMatch.apply(match, argument
 app.get('/matches/:id/delete', function(){ match.delete.apply(match, arguments) });
 app.get('/matches/rebuildRatings', function(){ match.rebuildRatings.apply(match, arguments) });
 app.get('/matches/recommend', function(){ match.recommend.apply(match, arguments) });
+app.get('/matches/teams/:matchld', function(){ match.teamMatch.apply(match, arguments) });

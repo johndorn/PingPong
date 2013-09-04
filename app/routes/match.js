@@ -89,6 +89,69 @@ Match.prototype.singleMatch = function(req, res){
 	});
 };
 
+/*
+
+This will replace the player matches entirely with single-user teams
+Team schema will contain an array of players
+
+*/
+
+Match.prototype.teamMatch = function(req, res){
+	var matchId = req.params.id;
+	//console.log("MatchID", matchId);
+	var that = this;
+	
+	/*
+		parallel(arrFunctions, callback(err, func1Return, func2Return, ... funcNReturn))
+
+		This needs re-written to pull only the data it needs
+		Pulling EVERYTHING isn't likely to scale
+	*/
+	async.parallel([
+		
+		function(pcb){ // Get all Matches
+			that.config.Matches.findById(matchId, function (err, matchInfo) {
+				//console.log("SingleMatchInfo", matchInfo);
+				pcb(null, matchInfo);
+			});
+		},
+		
+		function(pcb){ // Get All Available Teams
+			that.config.Teams.find(function (err, teams) {
+				if (err){ // TODO handle err
+					console.log(err)
+				} else{
+					pcb(null,teams)
+				}
+			});
+		},
+
+		function(pcb){ // Get All Available Players
+			that.config.Players.find(function (err, players) {
+				if (err){ // TODO handle err
+					console.log(err)
+				} else{
+					pcb(null,players)
+				}
+			});
+		}
+
+	], function(error, args){
+		var matchDetails = args[0];
+		var myTeams = args[1];
+		var myPlayers = args[2];
+		myPlayers.forEach(function(player, j){
+			if(player["_id"] == matchDetails.redPlayer){
+				matchDetails.redTeamDetails = player;
+			}
+			if(player["_id"] == matchDetails.bluePlayer){
+				matchDetails.blueTeamDetails = player;
+			}
+		});
+		res.json(matchDetails)
+	});
+};
+
 // gets a list of all of the matches
 Match.prototype.json = function(req, res){
 	var that = this;
